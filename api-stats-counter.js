@@ -10,7 +10,6 @@ async function countAPIStats(version) {
 
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-  // Save names to file
   function saveNamesToFile() {
     const namesArray = Array.from(uniqueNames).sort();
     fs.writeFileSync(
@@ -25,7 +24,6 @@ async function countAPIStats(version) {
     try {
       const response = await axios.get(`${baseUrl}?query=${encodeURIComponent(prefix)}`);
       
-      // Extract the results array from the response
       if (response.data && Array.isArray(response.data.results)) {
         return response.data.results;
       } else if (response.data && typeof response.data === 'object') {
@@ -58,16 +56,12 @@ async function countAPIStats(version) {
       const results = await fetchNames(prefix);
       
       if (Array.isArray(results)) {
-        // Process results and count new unique names
         let newNames = 0;
-        const resultSet = new Set(); // Track duplicates within this result
-        
+        const resultSet = new Set(); 
         results.forEach(name => {
-          // Skip duplicates within this result set
           if (!resultSet.has(name)) {
             resultSet.add(name);
             
-            // Check if it's new to our overall set
             if (!uniqueNames.has(name)) {
               uniqueNames.add(name);
               newNames++;
@@ -77,12 +71,10 @@ async function countAPIStats(version) {
         
         console.log(`[v${version}] Prefix: "${prefix}", Found: ${results.length}, New unique: ${newNames}, Total unique: ${uniqueNames.size}, Requests: ${requestCount}`);
         
-        // Save progress every 10 requests
         if (requestCount % 10 === 0) {
           saveNamesToFile();
         }
         
-        // If we have results and the prefix isn't too long, explore further
         if (results.length > 0 && prefix.length < 3) {
           for (const char of 'abcdefghijklmnopqrstuvwxyz') {
             const newPrefix = prefix + char;
@@ -102,7 +94,6 @@ async function countAPIStats(version) {
   
   await exploreAllPrefixes();
   
-  // Save final results to file
   saveNamesToFile();
   
   const duration = (Date.now() - startTime) / 1000 / 60;
@@ -122,17 +113,14 @@ async function countAPIStats(version) {
 
 async function main() {
   try {
-    // Create a summary file
     const summaryFile = 'api_summary.txt';
     let summary = 'API AUTOCOMPLETE SUMMARY\n';
     summary += '======================\n\n';
     
-    // Count stats for all versions
     for (const version of [1, 2, 3]) {
       try {
         console.log(`\n============ TESTING API v${version} ============`);
         
-        // First check if this API version exists
         try {
           const testResponse = await axios.get(`http://35.200.185.69:8000/v${version}/autocomplete?query=a`);
           console.log(`API v${version} is working. Test response:`, testResponse.data);
@@ -151,7 +139,6 @@ async function main() {
         
         const stats = await countAPIStats(version);
         
-        // Add to summary
         summary += `=== FORM ANSWERS for v${version} ===\n`;
         summary += `No. of searches made for v${version}: ${stats.requests}\n`;
         summary += `No. of results in v${version}: ${stats.namesCount}\n\n`;
@@ -165,7 +152,6 @@ async function main() {
       }
     }
     
-    // Save summary to file
     fs.writeFileSync(summaryFile, summary);
     console.log(`\nSummary saved to ${summaryFile}`);
     

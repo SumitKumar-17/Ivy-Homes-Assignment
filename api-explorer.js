@@ -1,26 +1,23 @@
 const axios = require('axios');
 
 const API_URL = 'http://35.200.185.69:8000/v1/autocomplete';
-
-// Utility to add delay
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-// Test different query patterns
 async function exploreQueryPatterns() {
   console.log('Exploring API query patterns...');
   
   const testQueries = [
-    '',           // Empty query
-    'a',          // Single letter
-    'b',          // Another single letter
-    'jo',         // Two letters
-    'john',       // Common name
-    'z',          // Less common letter
-    'zzz',        // Unlikely prefix
-    'a1',         // Letter + number
-    '123',        // Numbers only
-    '_',          // Special character
-  ];
+    '',           
+      'a',          
+      'b',          
+      'jo',         
+      'john',       
+      'z',          
+      'zzz',        
+      'a1',         
+      '123',        
+      '_',          
+    ];
   
   for (const query of testQueries) {
     try {
@@ -37,16 +34,13 @@ async function exploreQueryPatterns() {
       }
     }
     
-    // Add delay between requests
     await sleep(500);
   }
 }
 
-// Test rate limiting behavior
 async function testRateLimiting() {
   console.log('\nTesting rate limiting behavior...');
   
-  // Make 10 rapid requests
   const results = [];
   
   for (let i = 0; i < 10; i++) {
@@ -66,7 +60,6 @@ async function testRateLimiting() {
       
       console.log(`Request #${i + 1}: Success in ${duration}ms | Results: ${response.data.length}`);
       
-      // No delay to test rate limiting
     } catch (error) {
       const endTime = Date.now();
       const duration = endTime - startTime;
@@ -80,12 +73,10 @@ async function testRateLimiting() {
       
       console.log(`Request #${i + 1}: Failed in ${duration}ms | Error: ${error.message}`);
       
-      // Add delay after error
       await sleep(1000);
     }
   }
   
-  // Analyze rate limiting pattern
   const successfulRequests = results.filter(r => r.status === 'success').length;
   const failedRequests = results.filter(r => r.status === 'error').length;
   
@@ -96,7 +87,6 @@ async function testRateLimiting() {
   if (failedRequests > 0) {
     console.log('- API appears to have rate limiting');
     
-    // Calculate average time to failure
     const failurePoints = results.findIndex(r => r.status === 'error');
     if (failurePoints > 0) {
       console.log(`- Rate limit triggered after ${failurePoints} requests`);
@@ -106,11 +96,9 @@ async function testRateLimiting() {
   }
 }
 
-// Test result limit patterns
 async function testResultLimits() {
   console.log('\nTesting for result limits...');
   
-  // Test common first letters that likely have many names
   const commonLetters = ['a', 'b', 'c', 'j', 'm', 's'];
   const resultCounts = {};
   
@@ -126,7 +114,6 @@ async function testResultLimits() {
     await sleep(500);
   }
   
-  // Analyze if there's a consistent result limit
   const counts = Object.values(resultCounts);
   const maxCount = Math.max(...counts);
   const lettersWithMaxCount = Object.keys(resultCounts).filter(letter => resultCounts[letter] === maxCount);
@@ -140,11 +127,9 @@ async function testResultLimits() {
   }
 }
 
-// Test pagination or alternative endpoints
 async function exploreEndpoints() {
   console.log('\nExploring for additional endpoints or parameters...');
   
-  // Test potential pagination parameters
   const paginationParams = [
     'limit=20',
     'offset=10',
@@ -164,7 +149,6 @@ async function exploreEndpoints() {
     await sleep(500);
   }
   
-  // Test for other endpoint variations
   const endpointVariations = [
     '/v1/autocomplete/count?query=a',
     '/v1/search?query=a',
@@ -185,11 +169,9 @@ async function exploreEndpoints() {
   }
 }
 
-// Run all exploration tests
 async function exploreAPI() {
   console.log('Starting API exploration...');
   
-  // Run tests
   await exploreQueryPatterns();
   await testRateLimiting();
   await testResultLimits();
