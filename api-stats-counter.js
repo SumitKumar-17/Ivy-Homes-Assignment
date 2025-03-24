@@ -1,22 +1,34 @@
 const axios = require('axios');
+const fs = require('fs');
 
 async function countAPIStats(version) {
   const baseUrl = `http://35.200.185.69:8000/v${version}/autocomplete`;
+  const outputFile = `v${version}_names.json`;
   let requestCount = 0;
   let uniqueNames = new Set();
   let processedPrefixes = new Set();
 
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+  // Save names to file
+  function saveNamesToFile() {
+    const namesArray = Array.from(uniqueNames).sort();
+    fs.writeFileSync(
+      outputFile,
+      JSON.stringify(namesArray, null, 2)
+    );
+    console.log(`Saved ${namesArray.length} unique names to ${outputFile}`);
+  }
+
   async function fetchNames(prefix) {
     requestCount++;
     try {
       const response = await axios.get(`${baseUrl}?query=${encodeURIComponent(prefix)}`);
+      
       // Extract the results array from the response
       if (response.data && Array.isArray(response.data.results)) {
         return response.data.results;
       } else if (response.data && typeof response.data === 'object') {
-        console.log(`Got response with structure:`, Object.keys(response.data));
         return response.data.results || [];
       } else {
         return [];
@@ -46,10 +58,31 @@ async function countAPIStats(version) {
       const results = await fetchNames(prefix);
       
       if (Array.isArray(results)) {
-        results.forEach(name => uniqueNames.add(name));
+        // Process results and count new unique names
+        let newNames = 0;
+        const resultSet = new Set(); // Track duplicates within this result
         
-        console.log(`[v${version}] Prefix: ${prefix}, Found: ${results.length}, Total unique: ${uniqueNames.size}, Requests: ${requestCount}`);
+        results.forEach(name => {
+          // Skip duplicates within this result set
+          if (!resultSet.has(name)) {
+            resultSet.add(name);
+            
+            // Check if it's new to our overall set
+            if (!uniqueNames.has(name)) {
+              uniqueNames.add(name);
+              newNames++;
+            }
+          }
+        });
         
+        console.log(`[v${version}] Prefix: "${prefix}", Found: ${results.length}, New unique: ${newNames}, Total unique: ${uniqueNames.size}, Requests: ${requestCount}`);
+        
+        // Save progress every 10 requests
+        if (requestCount % 10 === 0) {
+          saveNamesToFile();
+        }
+        
+        // If we have results and the prefix isn't too long, explore further
         if (results.length > 0 && prefix.length < 3) {
           for (const char of 'abcdefghijklmnopqrstuvwxyz') {
             const newPrefix = prefix + char;
@@ -69,12 +102,16 @@ async function countAPIStats(version) {
   
   await exploreAllPrefixes();
   
+  // Save final results to file
+  saveNamesToFile();
+  
   const duration = (Date.now() - startTime) / 1000 / 60;
   
   console.log(`\n=== API v${version} STATS ===`);
   console.log(`Total requests: ${requestCount}`);
   console.log(`Total unique names: ${uniqueNames.size}`);
   console.log(`Time taken: ${duration.toFixed(2)} minutes`);
+  console.log(`All unique names saved to ${outputFile}`);
   
   return {
     version,
@@ -85,21 +122,53 @@ async function countAPIStats(version) {
 
 async function main() {
   try {
-    // Test with a simple request first to see response structure
-    const testResponse = await axios.get('http://35.200.185.69:8000/v1/autocomplete?query=a');
-    console.log('Response structure:', testResponse.data);
+    // Create a summary file
+    const summaryFile = 'api_summary.txt';
+    let summary = 'API AUTOCOMPLETE SUMMARY\n';
+    summary += '======================\n\n';
     
     // Count stats for all versions
     for (const version of [1, 2, 3]) {
       try {
+        console.log(`\n============ TESTING API v${version} ============`);
+        
+        // First check if this API version exists
+        try {
+          const testResponse = await axios.get(`http://35.200.185.69:8000/v${version}/autocomplete?query=a`);
+          console.log(`API v${version} is working. Test response:`, testResponse.data);
+        } catch (err) {
+          console.log(`API v${version} might not exist. Error:`, err.message);
+          if (err.response && err.response.status === 404) {
+            console.log(`Skipping API v${version} (404 Not Found)`);
+            
+            summary += `=== FORM ANSWERS for v${version} ===\n`;
+            summary += `No. of searches made for v${version}: 0 (API does not exist)\n`;
+            summary += `No. of results in v${version}: 0 (API does not exist)\n\n`;
+            
+            continue;
+          }
+        }
+        
         const stats = await countAPIStats(version);
+        
+        // Add to summary
+        summary += `=== FORM ANSWERS for v${version} ===\n`;
+        summary += `No. of searches made for v${version}: ${stats.requests}\n`;
+        summary += `No. of results in v${version}: ${stats.namesCount}\n\n`;
+        
         console.log(`\n=== FORM ANSWERS for v${version} ===`);
         console.log(`No. of searches made for v${version}: ${stats.requests}`);
         console.log(`No. of results in v${version}: ${stats.namesCount}`);
       } catch (err) {
         console.log(`Error processing v${version}: ${err.message}`);
+        summary += `Error processing v${version}: ${err.message}\n`;
       }
     }
+    
+    // Save summary to file
+    fs.writeFileSync(summaryFile, summary);
+    console.log(`\nSummary saved to ${summaryFile}`);
+    
   } catch (error) {
     console.error("Error:", error.message);
   }
