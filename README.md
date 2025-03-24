@@ -5,12 +5,12 @@ This project extracts all possible names from an autocomplete API located at htt
 
 
 | **Field**                          | **Description**                                                                  | **Sample Value** |
-|-----------------------------------|----------------------------------------------------------------------------------|------------------|
-| **No. of Searches Made for v1**   | Number of requests made to fetch all results from v1 autocomplete API            | 5                |
-| **No. of Searches Made for v2**   | Number of requests made to fetch all results from v2 autocomplete API            | 3                |
-| **No. of Results in v1**          | Total number of results found in v1 autocomplete API                             | 120              |
-| **No. of Results in v2**          | Total number of results found in v2 autocomplete API                             | 95               |
-| **No. of Results in v3**          | Total number of results found in v3 autocomplete API                             | 150              |
+|-----------------------------------|----------------------------------------------------------------------------------|-------------------|
+| **No. of Searches Made for v1**   | Number of requests made to fetch all results from v1 autocomplete API            | 3727              |
+| **No. of Searches Made for v2**   | Number of requests made to fetch all results from v2 autocomplete API            | 1370              |
+| **No. of Results in v1**          | Total number of results found in v1 autocomplete API                             | 7376              |
+| **No. of Results in v2**          | Total number of results found in v2 autocomplete API                             | 4469              |
+| **No. of Results in v3**          | Total number of results found in v3 autocomplete API                             | 3918              |
 
 
 ## Findings
