@@ -3,6 +3,20 @@
 ## Overview
 This project extracts all possible names from an autocomplete API located at http://35.200.185.69:8000. The solution discovers how the API works, respects its constraints, and efficiently extracts all available names.
 
+
+| **Field**                          | **Description**                                                                  | **Sample Value** |
+|-----------------------------------|----------------------------------------------------------------------------------|------------------|
+| **No. of Searches Made for v1**   | Number of requests made to fetch all results from v1 autocomplete API            | 5                |
+| **No. of Searches Made for v2**   | Number of requests made to fetch all results from v2 autocomplete API            | 3                |
+| **No. of Results in v1**          | Total number of results found in v1 autocomplete API                             | 120              |
+| **No. of Results in v2**          | Total number of results found in v2 autocomplete API                             | 95               |
+| **No. of Results in v3**          | Total number of results found in v3 autocomplete API                             | 150              |
+
+
+## Findings
+Due to large amount of rate limiting presen tin the APIs of different versions , it was time taking to extract all the name sfrom the apis ,which leads to a very large extraction which cannot be bypassed and aas the Ip address isgettign rate limited . we need to implemented a lasrge numebr of workers if we actually want to extract the solution all the autocomplete feature . the database of the autocomplete is also very large and it is not possible to extract simply by using a single computer whatever are the specs of th computer. 
+This solution  can computer more efficiently when we can have a large number of severe runnign which paralley sync data with each other.
+
 ## API Findings
 
 ### Endpoint Documentation
@@ -93,8 +107,3 @@ To efficiently extract all names while respecting API constraints:
 4. **Challenge**: Duplicate checking
    **Solution**: Maintained a Set for O(1) lookups
 
-## Conclusion
-
-This solution efficiently extracts all names from the autocomplete API while respecting its constraints. The approach minimizes the number of requests needed while ensuring comprehensive coverage of all possible names.
-
-The code is designed to be robust against rate limiting and other typical API constraints, making it adaptable to similar extraction tasks with minor modifications.
